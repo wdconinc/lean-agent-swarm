@@ -1,18 +1,20 @@
-import redis
 import json
-import uuid
 import time
-from typing import Dict, Any, Optional
+import uuid
+from typing import Any
+
+import redis
+
 
 class TaskQueue:
-    def __init__(self, host='localhost', port=6379, db=0):
+    def __init__(self, host="localhost", port=6379, db=0):
         self.redis = redis.Redis(host=host, port=port, db=db, decode_responses=True)
         self.q_pending = "queue:pending"
         self.q_active = "queue:active"
         self.q_completed = "queue:completed"
         self.q_failed = "queue:failed"
 
-    def push_task(self, task: Dict[str, Any]) -> str:
+    def push_task(self, task: dict[str, Any]) -> str:
         """Push a new task to the pending queue."""
         if "task_id" not in task:
             task["task_id"] = str(uuid.uuid4())
@@ -20,7 +22,7 @@ class TaskQueue:
         self.redis.rpush(self.q_pending, json.dumps(task))
         return task["task_id"]
 
-    def pop_task(self, timeout: int = 0) -> Optional[Dict[str, Any]]:
+    def pop_task(self, timeout: int = 0) -> dict[str, Any] | None:
         """Pop a task from pending and move to active atomically."""
         result = self.redis.brpoplpush(self.q_pending, self.q_active, timeout=timeout)
         if result:
@@ -33,7 +35,7 @@ class TaskQueue:
             return task
         return None
 
-    def complete_task(self, task: Dict[str, Any], result_data: Dict[str, Any]):
+    def complete_task(self, task: dict[str, Any], result_data: dict[str, Any]):
         """Mark a task as completed and save results."""
         self._remove_from_active(task)
         task["status"] = "completed"
@@ -41,21 +43,23 @@ class TaskQueue:
         task["end_time"] = time.time()
         self.redis.rpush(self.q_completed, json.dumps(task))
 
-    def fail_task(self, task: Dict[str, Any], error_data: Dict[str, Any]):
+    def fail_task(self, task: dict[str, Any], error_data: dict[str, Any]):
         """Mark a task as failed after retries."""
         self._remove_from_active(task)
         task["status"] = "failed"
         task["error"] = error_data
         task["end_time"] = time.time()
         self.redis.rpush(self.q_failed, json.dumps(task))
-        
-    def retry_task(self, task: Dict[str, Any]):
+
+    def retry_task(self, task: dict[str, Any]):
         """Move task back to pending from active."""
         self._remove_from_active(task)
         task["status"] = "pending"
-        self.redis.lpush(self.q_pending, json.dumps(task)) # Put at the front of the queue
+        self.redis.lpush(
+            self.q_pending, json.dumps(task)
+        )  # Put at the front of the queue
 
-    def _remove_from_active(self, task: Dict[str, Any]):
+    def _remove_from_active(self, task: dict[str, Any]):
         """Helper to remove the task from the active queue."""
         # Find the exact JSON string to remove
         # In a real production system, you'd use Hashes keyed by task_id for state,
@@ -70,10 +74,10 @@ class TaskQueue:
                 self.redis.lrem(self.q_active, 1, t_str)
                 break
 
-    def get_queue_sizes(self) -> Dict[str, int]:
+    def get_queue_sizes(self) -> dict[str, int]:
         return {
             "pending": self.redis.llen(self.q_pending),
             "active": self.redis.llen(self.q_active),
             "completed": self.redis.llen(self.q_completed),
-            "failed": self.redis.llen(self.q_failed)
+            "failed": self.redis.llen(self.q_failed),
         }
