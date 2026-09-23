@@ -20,13 +20,13 @@ A distributed, Redis-backed agentic framework for Automated Theorem Proving (ATP
 3. **Run the Planner:**
    Generate the JSON task array and populate the queue.
    ```bash
-   python3 src/planner.py
+   ./bin/run_planner.sh
    ```
 
 4. **Launch the Prover Fleet:**
    In a production environment, submit a Slurm job array. For local testing:
    ```bash
-   python3 src/prover_worker.py
+   ./bin/run_worker.sh
    ```
 
 ## Documentation

@@ -9,10 +9,10 @@ To run the framework locally:
 
 2. **Run the Planner:**
 ```bash
-python3 src/planner.py
+./bin/run_planner.sh
 ```
 
 3. **Run the Worker:**
 ```bash
-python3 src/prover_worker.py
+./bin/run_worker.sh
 ```
