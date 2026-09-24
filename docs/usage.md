@@ -12,7 +12,13 @@ To run the framework locally:
 ./bin/run_planner.sh
 ```
 
-3. **Run the Worker:**
+3. **(Optional) Run the MCP Server:**
+Expose the swarm orchestration API to Claude Desktop or Cursor:
+```bash
+./bin/run_mcp_server.sh
+```
+
+4. **Run the Worker:**
 ```bash
 ./bin/run_worker.sh
 ```

@@ -18,12 +18,18 @@ A distributed, Redis-backed agentic framework for Automated Theorem Proving (ATP
    ```
 
 3. **Run the Planner:**
-   Generate the JSON task array and populate the queue.
+   Generate the JSON task array and populate the queue natively using Python.
    ```bash
    ./bin/run_planner.sh
    ```
 
-4. **Launch the Prover Fleet:**
+4. **(Optional) Run the MCP Server:**
+   Instead of using the static Python planner, you can expose the queue as an MCP Server to any compatible LLM client (e.g. Claude Desktop, Cursor).
+   ```bash
+   ./bin/run_mcp_server.sh
+   ```
+
+5. **Launch the Prover Fleet:**
    In a production environment, submit a Slurm job array. For local testing:
    ```bash
    ./bin/run_worker.sh
